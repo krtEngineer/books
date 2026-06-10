@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# Git passes the path to the commit message file as the first argument
+COMMIT_MSG_FILE=$1
+
+# Read the first line of the commit message
+FIRST_LINE=$(head -n 1 "$COMMIT_MSG_FILE")
+
+# ---------------------------------------------------------
+# CONFIGURATION
+# Add new prefixes to this array, separated by spaces.
+# Make sure to wrap each prefix in quotes.
+# ---------------------------------------------------------
+ALLOWED_PREFIXES=(
+    "[BOOK_01]"
+    "[README]"
+    "[MAINTAIN]"
+)
+
+# Flag to track if a match is found
+IS_VALID=0
+
+# Loop through the allowed prefixes and check if the first line starts with any of them
+for PREFIX in "${ALLOWED_PREFIXES[@]}"; do
+    # The asterisk (*) acts as a wildcard after the prefix
+    if [[ "$FIRST_LINE" == "$PREFIX"* ]]; then
+        IS_VALID=1
+        break
+    fi
+done
+
+# If no match was found, block the commit and show an error message
+if [[ $IS_VALID -eq 0 ]]; then
+    echo "---------------------------------------------------------"
+    echo "❌ ERROR: Invalid commit message format."
+    echo "---------------------------------------------------------"
+    echo "Your commit message must start with one of the following prefixes:"
+    
+    for PREFIX in "${ALLOWED_PREFIXES[@]}"; do
+        echo "  - $PREFIX"
+    done
+    
+    echo ""
+    echo "Your attempted commit message was:"
+    echo ">> $FIRST_LINE"
+    echo "---------------------------------------------------------"
+    
+    # Exit with a non-zero status to abort the commit
+    exit 1
+fi
+
+# Exit with 0 to allow the commit
+exit 0
